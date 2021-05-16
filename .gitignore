@@ -1,2 +1,3 @@
 .vscode
-build/game.exe
+build/*.exe
+build/*.o
