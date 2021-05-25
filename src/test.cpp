@@ -25,6 +25,10 @@ int main(int argc, char* args[]){
     int my = 0;
     int pigDirection = 1;
 
+    bool jump = false;
+    float jumpVel = 50;
+    float gravity = 0.1f;
+
     pigDestination = {1, window_width - 80, 94, 60};
     enemyDestination = {1, 40, 94, 60}; //x, y, width, height
     enemyDestination.h = 62;
@@ -67,9 +71,10 @@ int main(int argc, char* args[]){
             pigDestination.x--;
             pigDirection = 0;
         }
-        if (state[SDL_SCANCODE_SPACE]) {
+        if (state[SDL_SCANCODE_SPACE] && !jump) {
             printf("Space key pressed.\n");
-            pigDestination.y--;
+            jump = true;
+            //pigDestination.y--;
         }
         if (state[SDL_MOUSEBUTTONDOWN]) {
             if (event.button.button == SDL_BUTTON_LEFT){
@@ -84,6 +89,16 @@ int main(int argc, char* args[]){
         //SDL_BlitSurface(enemy, NULL, screenSurface, &enemyDestination);
         //SDL_BlitSurface(guineaPig, NULL, screenSurface, &pigDestination);
         //SDL_UpdateWindowSurface(window);
+        if (jump) {
+            pigDestination.y -= jumpVel;
+            jumpVel -= gravity;
+        }
+
+        if (pigDestination.y == window_width - 80) { // collision with ground
+            jumpVel = 5;
+            jump = false;
+        }
+
         if(pigDirection == 0) {
             SDL_RenderCopy(renderer, guineaPigLeftTexture, NULL, &pigDestination);
         } else {
