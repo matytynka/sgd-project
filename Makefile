@@ -4,7 +4,7 @@ ODIR = build
 SDIR = src
 
 CC=g++
-CFLAGS=-I$(IDIR) -L$(LDIR) -w -lmingw32 -lSDL2main -lSDL2 -std=c++11 -o $@
+CFLAGS=-I$(IDIR) -L$(LDIR) -w -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -std=c++14 -o $@
 
 _DEPS = 
 DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
