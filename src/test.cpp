@@ -16,9 +16,6 @@ SDL_Rect pigDestination;
 SDL_Rect enemyDestination;
 const Uint8 * state = SDL_GetKeyboardState(NULL);
 
-/*bool hitbox() {
-}*/
-
 int main(int argc, char* args[]){ 
 
     bool quit = false;
@@ -28,12 +25,13 @@ int main(int argc, char* args[]){
     int my = 0;
     int pigDirection = 1;
 
+    bool canJump = true;
     bool jump = false;
+    bool fall = false;
     float jumpVel = 0;
+    float fallVel = 0;
     float gravity = 0.1f;
 
-    int pigPrevX = 0;
-    int pigPrevY = 0;
 
     pigDestination = {1, window_height - 80, 94, 60};
     enemyDestination = {1, 40, 94, 60}; //x, y, width/w, height/h
@@ -70,22 +68,22 @@ int main(int argc, char* args[]){
             }
         }
 
-        pigPrevX = pigDestination.x;
-        pigPrevY = pigDestination.y;
+        int prevX = pigDestination.x;
+        int prevY = pigDestination.y;
 
         if (state[SDL_SCANCODE_RIGHT]) {
-            printf("Right key pressed.\n");
-            pigDestination.x++;
+            //printf("Right key pressed.\n");
+            pigDestination.x+=2;
             pigDirection = 1;
         }
         if (state[SDL_SCANCODE_LEFT]) {
-            printf("Left key pressed.\n");
-            pigDestination.x--;
+            //printf("Left key pressed.\n");
+            pigDestination.x-=2;
             pigDirection = 0;
         }
-        if (state[SDL_SCANCODE_SPACE] && !jump) {
-            printf("Space key pressed.\n");
+        if (state[SDL_SCANCODE_SPACE] && !jump && canJump) {
             jump = true;
+            canJump = false;
         }
         if (state[SDL_MOUSEBUTTONDOWN]) {
             if (event.button.button == SDL_BUTTON_LEFT){
@@ -93,22 +91,49 @@ int main(int argc, char* args[]){
             my = event.button.y;
             enemyDestination.x = mx;
             enemyDestination.y = my;
-            //printf("Mouse pressed at: ", mx, ", ", my);
             }
         }
-        //SDL_FillRect(screenSurface, NULL, 0x000000);
-        //SDL_BlitSurface(enemy, NULL, screenSurface, &enemyDestination);
-        //SDL_BlitSurface(guineaPig, NULL, screenSurface, &pigDestination);
-        //SDL_UpdateWindowSurface(window);
+
+        if(world.rightBlocks(pigDestination.x, pigDestination.y) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
+            pigDestination.x = prevX;
+        }
+
+        if(world.upperBlocks(pigDestination.x, pigDestination.y) == true) {
+            jump = false;
+            fall = true;
+        }
+        // jezeli pod swinia nic nie ma
+        if(world.lowerBlocks(pigDestination.x, pigDestination.y) == false) {
+            // ale nie jest w trakcie skoku
+            if(!jump) {
+                fall = true;
+                jumpVel = 6;
+            }
+        } else {
+            // jezeli pod nia coś jednak jest
+            fall = false;
+            canJump = true;
+            fallVel = 0;
+            jumpVel = 6;
+        }; 
+
+        // jezeli jest w trakcie skoku to leci do gory
         if (jump) {
             pigDestination.y -= jumpVel;
             jumpVel -= gravity;
+            if(jumpVel <= 0) {
+                jump = false;
+                fall = true;
+            }
         }
 
-        if (pigDestination.y == window_height - 80) { // collision with ground
-            jumpVel = 6;
-            jump = false;
+        // jezeli jest w trakcie spadania to leci w dol
+        if (fall) {
+            pigDestination.y += fallVel;
+            fallVel += gravity;
         }
+
+        //std::cout << "jump = " << jump << " fall = " << fall << " jumpVel = " << jumpVel << " fallVel = " << fallVel << std::endl;
 
         if(pigDirection == 0) {
             SDL_RenderCopy(renderer, guineaPigLeftTexture, NULL, &pigDestination);
