@@ -10,7 +10,8 @@ SDL_Surface* guineaPig = NULL;
 SDL_Texture* guineaPigRightTexture;
 SDL_Texture* guineaPigLeftTexture;
 SDL_Surface* enemy = NULL;
-SDL_Texture* enemyTexture;
+SDL_Texture* enemyLeftTexture;
+SDL_Texture* enemyRightTexture;
 SDL_Event event;
 SDL_Rect pigDestination;
 SDL_Rect enemyDestination;
@@ -24,6 +25,7 @@ int main(int argc, char* args[]){
     int mx = 0;
     int my = 0;
     int pigDirection = 1;
+    int enemyDirection = 1;
 
     bool canJump = true;
     bool jump = false;
@@ -32,9 +34,12 @@ int main(int argc, char* args[]){
     float fallVel = 0;
     float gravity = 0.1f;
 
+    bool leftWay = false;
+    bool rightWay = true;
 
-    pigDestination = {1, window_height - 80, 94, 60};
-    enemyDestination = {1, 40, 94, 60}; //x, y, width/w, height/h
+
+    pigDestination = {70, window_height - 80, 94, 60};
+    enemyDestination = {921, 644, 94, 60}; //x, y, width/w, height/h
     
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -45,16 +50,16 @@ int main(int argc, char* args[]){
         return 1;
     }
 
-    //screenSurface = SDL_GetWindowSurface(window);
     renderer = SDL_CreateRenderer(window, -1, 0);
 
     guineaPig = IMG_Load("guinea-pig-right.png");
     guineaPigRightTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
     guineaPig = IMG_Load("guinea-pig-left.png");
     guineaPigLeftTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
-    //SDL_FreeSurface(guineaPig);
-    enemy = IMG_Load("enemy.png");
-    enemyTexture = SDL_CreateTextureFromSurface(renderer, enemy);
+    enemy = IMG_Load("enemy-right.png");
+    enemyRightTexture = SDL_CreateTextureFromSurface(renderer, enemy);
+    enemy = IMG_Load("enemy-left.png");
+    enemyLeftTexture = SDL_CreateTextureFromSurface(renderer, enemy);
 
     world = World(renderer);
     world.levelLoad("level-1.txt");
@@ -72,12 +77,11 @@ int main(int argc, char* args[]){
         int prevY = pigDestination.y;
 
         if (state[SDL_SCANCODE_RIGHT]) {
-            //printf("Right key pressed.\n");
             pigDestination.x+=2;
             pigDirection = 1;
+            //printf("x: %i, y: %i ", pigDestination.x, pigDestination.y);
         }
         if (state[SDL_SCANCODE_LEFT]) {
-            //printf("Left key pressed.\n");
             pigDestination.x-=2;
             pigDirection = 0;
         }
@@ -85,19 +89,37 @@ int main(int argc, char* args[]){
             jump = true;
             canJump = false;
         }
-        if (state[SDL_MOUSEBUTTONDOWN]) {
+        /*if (state[SDL_MOUSEBUTTONDOWN]) { // przesun enemy tam gdzie klikasz
             if (event.button.button == SDL_BUTTON_LEFT){
             mx = event.button.x;
             my = event.button.y;
             enemyDestination.x = mx;
             enemyDestination.y = my;
             }
+        }*/
+
+        //przesuwanie enemy
+        if (rightWay) {
+        enemyDestination.x++;
         }
+        if(world.rightBlocks(enemyDestination.x, enemyDestination.y) == true) {
+            leftWay = true;
+            rightWay = false;
+            enemyDirection = 0;
+        }
+        if (leftWay) {
+            enemyDestination.x--;
+        }
+        if(world.leftBlocks(enemyDestination.x, enemyDestination.y) == true) {
+            leftWay = false;
+            rightWay = true;
+            enemyDirection = 1;
+        }
+
 
         if(world.rightBlocks(pigDestination.x, pigDestination.y) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
             pigDestination.x = prevX;
         }
-
         if(world.upperBlocks(pigDestination.x, pigDestination.y) == true) {
             jump = false;
             fall = true;
@@ -116,7 +138,6 @@ int main(int argc, char* args[]){
             fallVel = 0;
             jumpVel = 6;
         }; 
-
         // jezeli jest w trakcie skoku to leci do gory
         if (jump) {
             pigDestination.y -= jumpVel;
@@ -126,7 +147,6 @@ int main(int argc, char* args[]){
                 fall = true;
             }
         }
-
         // jezeli jest w trakcie spadania to leci w dol
         if (fall) {
             pigDestination.y += fallVel;
@@ -140,7 +160,11 @@ int main(int argc, char* args[]){
         } else {
             SDL_RenderCopy(renderer, guineaPigRightTexture, NULL, &pigDestination);
         }
-        SDL_RenderCopy(renderer, enemyTexture, NULL, &enemyDestination);
+        if(enemyDirection == 0) {
+            SDL_RenderCopy(renderer, enemyLeftTexture, NULL, &enemyDestination);
+        } else {
+            SDL_RenderCopy(renderer, enemyRightTexture, NULL, &enemyDestination);
+        }
         SDL_RenderPresent(renderer);
     }
 

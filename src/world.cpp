@@ -78,11 +78,11 @@ class World {
 
     bool checkHitbox(int pigTileX, int pigTileY, int blockX, int blockY) {
         //printf("x1: %d, x2: %d, y1: %d, y2: %d ", pigTileX < (blockX + 1) * BLOCKSIZE, pigTileX + PIG_WIDTH > blockX * BLOCKSIZE, pigTileY < (blockY + 1) * BLOCKSIZE, pigTileY + PIG_HEIGHT > blockY * BLOCKSIZE);
-        if (pigTileX < (blockX + 1) * BLOCKSIZE &&
-        pigTileX + PIG_WIDTH > blockX * BLOCKSIZE &&
-        pigTileY < (blockY + 1) * BLOCKSIZE &&
-        pigTileY + PIG_HEIGHT > blockY * BLOCKSIZE) {
-            printf("pig %i, block %i \n", pigTileY, (blockY + 1) * BLOCKSIZE);
+        if (pigTileX <= (blockX + 1) * BLOCKSIZE &&
+        pigTileX + PIG_WIDTH >= blockX * BLOCKSIZE &&
+        pigTileY <= (blockY + 1) * BLOCKSIZE &&
+        pigTileY + PIG_HEIGHT >= blockY * BLOCKSIZE) {
+            //printf("pig %i, block %i \n", pigTileY, (blockY + 1) * BLOCKSIZE);
             return true;
         }
         return false;
@@ -91,7 +91,7 @@ class World {
     bool upperBlocks(int pigX, int pigY) {
         int blockTileX = pigX  / BLOCKSIZE;
         int blockTileY = pigY / BLOCKSIZE;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             if(pigY < PIG_HEIGHT) {
                 break;
             }
@@ -108,7 +108,7 @@ class World {
     bool lowerBlocks(int pigX, int pigY) {
         int blockTileX = pigX / BLOCKSIZE;
         int blockTileY = (pigY + PIG_HEIGHT) / BLOCKSIZE;
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < 2; i++) {
             if(map.at(blockTileY).at(blockTileX + i) == 1) {
                 if(checkHitbox(pigX, pigY, blockTileX + i, blockTileY) == true) {
                     return true;
@@ -125,7 +125,7 @@ class World {
         for (int i = 0; i < 1; i++) {
             if(map.at(blockTileY + i).at(blockTileX) == 1) {
                 if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
-                    printf("hitbox prawy");
+                    //printf("hitbox prawy ");
                     return true;
                     break;
                 }
@@ -140,7 +140,7 @@ class World {
         for (int i = 0; i < 1; i++) {
             if(map.at(blockTileY + i).at(blockTileX) == 1) {
                 if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
-                    printf("hitbox lewy");
+                    //printf("hitbox lewy ");
                     return true;
                     break;
                 }
