@@ -3,17 +3,19 @@ LDIR = lib
 ODIR = build
 SDIR = src
 
+LIBS=-lmingw32 -lSDL2main -lSDL2 -lSDL2_image
+
 CC=g++
-CFLAGS=-I$(IDIR) -L$(LDIR) -w -lmingw32 -lSDL2main -lSDL2 -lSDL2_image -std=c++14 -o $@
+CFLAGS=-I$(IDIR) -I$(SDIR) -L$(LDIR) -w -std=c++14
 
-_DEPS = 
-DEPS = $(patsubst %,$(IDIR)/%,$(_DEPS))
+_DEPS = world.hpp enemy.hpp
+DEPS = $(patsubst %,$(SDIR)/%,$(_DEPS))
 
-_OBJ = world.o test.o
+_OBJ = world.o enemy.o main.o
 OBJ = $(patsubst %,$(ODIR)/%,$(_OBJ))
 
 $(ODIR)/%.o: $(SDIR)/%.cpp $(DEPS)
-	$(CC) -c $< $(CFLAGS)
+	$(CC) -c -o $@ $< $(CFLAGS)
 
-build/game: $(OBJ)
-	$(CC) $^ $(CFLAGS)
+build/game.exe: $(OBJ)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)

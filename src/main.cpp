@@ -1,20 +1,20 @@
 #include <SDL2/SDL.h>
 #include <stdio.h>
 #include <SDL2/SDL_image.h>
-#include "world.cpp"
+#include <world.hpp>
+#include <enemy.hpp>
+#include <vector>
 
 World world;
+std::vector <Enemy> bluePigs;
 SDL_Renderer* renderer;
 SDL_Window * window;
 SDL_Surface* guineaPig = NULL;
 SDL_Texture* guineaPigRightTexture;
 SDL_Texture* guineaPigLeftTexture;
-SDL_Surface* enemy = NULL;
-SDL_Texture* enemyLeftTexture;
-SDL_Texture* enemyRightTexture;
 SDL_Event event;
 SDL_Rect pigDestination;
-SDL_Rect enemyDestination;
+
 const Uint8 * state = SDL_GetKeyboardState(NULL);
 
 int main(int argc, char* args[]){ 
@@ -25,7 +25,6 @@ int main(int argc, char* args[]){
     int mx = 0;
     int my = 0;
     int pigDirection = 1;
-    int enemyDirection = 1;
 
     bool canJump = true;
     bool jump = false;
@@ -34,12 +33,11 @@ int main(int argc, char* args[]){
     float fallVel = 0;
     float gravity = 0.1f;
 
-    bool leftWay = false;
-    bool rightWay = true;
+    bluePigs.push_back(Enemy(921, 644));
 
+    bluePigs.push_back(Enemy(521, 644));
 
     pigDestination = {70, window_height - 80, 94, 60};
-    enemyDestination = {921, 644, 94, 60}; //x, y, width/w, height/h
     
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -56,10 +54,10 @@ int main(int argc, char* args[]){
     guineaPigRightTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
     guineaPig = IMG_Load("guinea-pig-left.png");
     guineaPigLeftTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
-    enemy = IMG_Load("enemy-right.png");
-    enemyRightTexture = SDL_CreateTextureFromSurface(renderer, enemy);
-    enemy = IMG_Load("enemy-left.png");
-    enemyLeftTexture = SDL_CreateTextureFromSurface(renderer, enemy);
+
+    for(int i = 0; i < bluePigs.size(); i++) {
+        bluePigs.at(i).textureLoad(renderer);
+    }
 
     world = World(renderer);
     world.levelLoad("level-1.txt");
@@ -99,24 +97,15 @@ int main(int argc, char* args[]){
         }*/
 
         //przesuwanie enemy
-        if (rightWay) {
-        enemyDestination.x++;
-        }
-        if(world.rightBlocks(enemyDestination.x, enemyDestination.y) == true) {
-            leftWay = true;
-            rightWay = false;
-            enemyDirection = 0;
-        }
-        if (leftWay) {
-            enemyDestination.x--;
-        }
-        if(world.leftBlocks(enemyDestination.x, enemyDestination.y) == true) {
-            leftWay = false;
-            rightWay = true;
-            enemyDirection = 1;
+        for(int i = 0; i < bluePigs.size(); i++) {
+            SDL_Rect enemyDestination = bluePigs.at(i).getEnemyDestination();
+            bluePigs.at(i).move(world.leftBlocks(enemyDestination.x, enemyDestination.y), world.rightBlocks(enemyDestination.x, enemyDestination.y));
+            if (bluePigs.at(i).checkHitboxWithPig(pigDestination.x, pigDestination.y)) {
+                std::cout << "dead pig" << std::endl;
+            }
         }
 
-
+        //hitbox swini
         if(world.rightBlocks(pigDestination.x, pigDestination.y) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
             pigDestination.x = prevX;
         }
@@ -160,12 +149,13 @@ int main(int argc, char* args[]){
         } else {
             SDL_RenderCopy(renderer, guineaPigRightTexture, NULL, &pigDestination);
         }
-        if(enemyDirection == 0) {
-            SDL_RenderCopy(renderer, enemyLeftTexture, NULL, &enemyDestination);
-        } else {
-            SDL_RenderCopy(renderer, enemyRightTexture, NULL, &enemyDestination);
+
+        for(int i = 0; i < bluePigs.size(); i++) {
+            bluePigs.at(i).display(renderer);
         }
+
         SDL_RenderPresent(renderer);
+
     }
 
     SDL_FreeSurface(guineaPig);
