@@ -91,12 +91,11 @@ bool World::rightBlocks(int pigX, int pigY) {
     int blockTileX = (pigX + PIG_WIDTH) / BLOCKSIZE;
     int blockTileY = (pigY  + (PIG_HEIGHT/2)) / BLOCKSIZE;
     for (int i = 0; i < 1; i++) {
-        SDL_Rect rect = {blockTileX * BLOCKSIZE, blockTileY * BLOCKSIZE, BLOCKSIZE, BLOCKSIZE};
+        /*SDL_Rect rect = {blockTileX * BLOCKSIZE, blockTileY * BLOCKSIZE, BLOCKSIZE, BLOCKSIZE};
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
         SDL_RenderDrawRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);*/
         if(map.at(blockTileY + i).at(blockTileX) == 1) {
-
             if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
                 //printf("hitbox prawy ");
                 return true;
@@ -111,10 +110,10 @@ bool World::leftBlocks(int pigX, int pigY) {
     int blockTileX = pigX  / BLOCKSIZE;
     int blockTileY = (pigY + (PIG_HEIGHT/2)) / BLOCKSIZE;
     for (int i = 0; i < 1; i++) {
-        SDL_Rect rect = {blockTileX * BLOCKSIZE, blockTileY * BLOCKSIZE, BLOCKSIZE, BLOCKSIZE};
+        /*SDL_Rect rect = {blockTileX * BLOCKSIZE, blockTileY * BLOCKSIZE, BLOCKSIZE, BLOCKSIZE};
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
         SDL_RenderDrawRect(renderer, &rect);
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);*/
         if(map.at(blockTileY + i).at(blockTileX) == 1) {
             if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
                 //printf("hitbox lewy ");

@@ -4,6 +4,7 @@
 #include <world.hpp>
 #include <enemy.hpp>
 #include <vector>
+#include <math.h>
 
 World world;
 std::vector <Enemy> bluePigs;
@@ -33,11 +34,11 @@ int main(int argc, char* args[]){
     float fallVel = 0;
     float gravity = 0.1f;
 
-    bluePigs.push_back(Enemy(921, 644));
+    bluePigs.push_back(Enemy(921, 644));  //init
 
-    bluePigs.push_back(Enemy(521, 644));
+    bluePigs.push_back(Enemy(521, 644)); //init
 
-    pigDestination = {70, window_height - 80, 94, 60};
+    pigDestination = {70, window_height - 80, 94, 60}; //init
     
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -60,9 +61,13 @@ int main(int argc, char* args[]){
     }
 
     world = World(renderer);
-    world.levelLoad("level-1.txt");
+
+    world.levelLoad("level-1.txt"); //init
     
     while (!quit){
+
+        //Uint64 start = SDL_GetPerformanceCounter();
+
         SDL_RenderClear(renderer);
         world.renderWorld();
         while(SDL_PollEvent(&event)){
@@ -101,7 +106,16 @@ int main(int argc, char* args[]){
             SDL_Rect enemyDestination = bluePigs.at(i).getEnemyDestination();
             bluePigs.at(i).move(world.leftBlocks(enemyDestination.x, enemyDestination.y), world.rightBlocks(enemyDestination.x, enemyDestination.y));
             if (bluePigs.at(i).checkHitboxWithPig(pigDestination.x, pigDestination.y)) {
-                std::cout << "dead pig" << std::endl;
+                //jezeli pig jest w fall, podobny x (polowa) do enemy, mniejszy y od enemy -> to enemy dead
+                if (fall && (enemyDestination.x - enemyDestination.w / 2 < pigDestination.x < enemyDestination.x + enemyDestination.w / 2) && (pigDestination.y < enemyDestination.y) ) {
+                    std::cout << "dead enemy" << std::endl;
+                    bluePigs.at(i).setDead();
+                } else {
+                    std::cout << "dead pig" << std::endl;
+                }
+            }
+            if(bluePigs.at(i).getDeadTimer() < 0) {
+                bluePigs.erase(bluePigs.begin()+i);
             }
         }
 
@@ -122,6 +136,7 @@ int main(int argc, char* args[]){
             }
         } else {
             // jezeli pod nia coś jednak jest
+            //pigDestination.y = pigDestination.y - (pigDestination.y % BLOCKSIZE);
             fall = false;
             canJump = true;
             fallVel = 0;
@@ -156,6 +171,11 @@ int main(int argc, char* args[]){
 
         SDL_RenderPresent(renderer);
 
+        /*Uint64 end = SDL_GetPerformanceCounter();
+        float elapsedMS = (end - start) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
+        if(elapsedMS > 0){
+        SDL_Delay(floor(16.666f - elapsedMS));
+        }*/
     }
 
     SDL_FreeSurface(guineaPig);

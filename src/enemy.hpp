@@ -10,7 +10,9 @@ class Enemy {
         SDL_Rect enemyDestination;
 
         int enemyDirection = 1;
+        int deadTimer = 200;
 
+        bool dead = false;
         bool leftWay = false;
         bool rightWay = true;
 
@@ -19,6 +21,8 @@ class Enemy {
         Enemy();
         Enemy(int x, int y);
         SDL_Rect getEnemyDestination();
+        void setDead();
+        int getDeadTimer();
         void move(bool leftBlocks, bool rightBlocks);
         bool checkHitboxWithPig(int pigTileX, int pigTileY);
         void display(SDL_Renderer* renderer);
