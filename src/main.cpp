@@ -16,6 +16,12 @@ SDL_Texture* guineaPigRightTexture;
 SDL_Texture* guineaPigLeftTexture;
 SDL_Event event;
 SDL_Rect pigDestination;
+SDL_Surface* deathImage;
+SDL_Texture* deathImageTexture;
+SDL_Rect deathImageDestination;
+SDL_Surface* winImage;
+SDL_Texture* winImageTexture;
+SDL_Rect winImageDestination;
 
 const Uint8 * state = SDL_GetKeyboardState(NULL);
 
@@ -24,6 +30,10 @@ void init() {
     bluePigs.push_back(Enemy(921, 644));
     bluePigs.push_back(Enemy(521, 644));
     bluePigs.push_back(Enemy(1890, 324));
+    bluePigs.push_back(Enemy(2556, 644));
+    bluePigs.push_back(Enemy(3150, 517));
+    bluePigs.push_back(Enemy(2240, 455));
+ 
     pigDestination = {70, window_height - 80, 94, 60};
 }
 
@@ -34,6 +44,7 @@ int main(int argc, char* args[]){
     int mx = 0;
     int my = 0;
     int pigDirection = 1;
+    bool winPig = false;
     bool deadPig = false;
     bool canJump = true;
     bool jump = false;
@@ -59,6 +70,10 @@ int main(int argc, char* args[]){
     guineaPigRightTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
     guineaPig = IMG_Load("guinea-pig-left.png");
     guineaPigLeftTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
+    deathImage = IMG_Load("you-died.png");
+    deathImageTexture = SDL_CreateTextureFromSurface(renderer, deathImage);
+    winImage = IMG_Load("victory-royale.png");
+    winImageTexture = SDL_CreateTextureFromSurface(renderer, winImage);
 
     for(int i = 0; i < bluePigs.size(); i++) {
         bluePigs.at(i).textureLoad(renderer);
@@ -73,6 +88,9 @@ int main(int argc, char* args[]){
         //Uint64 start = SDL_GetPerformanceCounter();
 
         SDL_RenderClear(renderer);
+
+        //tu mozna dodac tlo
+
         world.moveCamera(pigDestination.x, pigDestination.y);
         world.renderWorld();
         while(SDL_PollEvent(&event)){
@@ -84,9 +102,7 @@ int main(int argc, char* args[]){
         int prevX = pigDestination.x;
         int prevY = pigDestination.y;
 
-        
-
-        if(!deadPig) {
+        if(!deadPig && !winPig) {
             if (state[SDL_SCANCODE_RIGHT]) {
                 pigDestination.x+=2;
                 pigDirection = 1;
@@ -94,7 +110,7 @@ int main(int argc, char* args[]){
             if (state[SDL_SCANCODE_LEFT]) {
                 pigDestination.x-=2;
                 pigDirection = 0;
-               // printf("x: %i, y: %i ", pigDestination.x, pigDestination.y);
+                //printf("x: %i, y: %i ", pigDestination.x, pigDestination.y);
             }
             if (state[SDL_SCANCODE_SPACE] && !jump && canJump) {
                 jump = true;
@@ -112,7 +128,7 @@ int main(int argc, char* args[]){
             //przesuwanie enemy
             for(int i = 0; i < bluePigs.size(); i++) {
                 SDL_Rect enemyDestination = bluePigs.at(i).getEnemyDestination();
-                bluePigs.at(i).move(world.leftBlocks(enemyDestination.x, enemyDestination.y), world.rightBlocks(enemyDestination.x, enemyDestination.y));
+                bluePigs.at(i).move(world.leftBlocks(enemyDestination.x, enemyDestination.y), world.rightBlocks(enemyDestination.x, enemyDestination.y, &winPig));
                 if (bluePigs.at(i).checkHitboxWithPig(pigDestination.x, pigDestination.y)) {
                     //jezeli pig jest w fall, podobny x (polowa) do enemy, mniejszy y od enemy -> to enemy dead
                     if (fall && (enemyDestination.x - enemyDestination.w / 2 < pigDestination.x < enemyDestination.x + enemyDestination.w / 2) && (pigDestination.y < enemyDestination.y) ) {
@@ -129,7 +145,7 @@ int main(int argc, char* args[]){
             }
 
             //hitbox swini
-            if(world.rightBlocks(pigDestination.x, pigDestination.y) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
+            if(world.rightBlocks(pigDestination.x, pigDestination.y, &winPig) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
                 pigDestination.x = prevX;
             }
             if(world.upperBlocks(pigDestination.x, pigDestination.y) == true) {
@@ -137,7 +153,7 @@ int main(int argc, char* args[]){
                 fall = true;
             }
             // jezeli pod swinia nic nie ma
-            if(world.lowerBlocks(pigDestination.x, pigDestination.y) == false) {
+            if(world.lowerBlocks(pigDestination.x, pigDestination.y, &deadPig) == false) {
                 // ale nie jest w trakcie skoku
                 if(!jump) {
                     fall = true;
@@ -183,6 +199,16 @@ int main(int argc, char* args[]){
 
         for(int i = 0; i < bluePigs.size(); i++) {
             bluePigs.at(i).display(renderer, renderP);
+        }
+
+        if(deadPig){
+            deathImageDestination = {(1280-610)/2, (720-86)/2, 610, 86};
+            SDL_RenderCopy(renderer, deathImageTexture, NULL, &deathImageDestination);
+        }
+
+        if(winPig){
+            winImageDestination = {(1280-863)/2, (720-295)/2, 863, 295};
+            SDL_RenderCopy(renderer, winImageTexture, NULL, &winImageDestination);
         }
 
         SDL_RenderPresent(renderer);

@@ -17,6 +17,8 @@ Point World::getRenderP() {
 void World::renderWorld() {
     grassBlock = IMG_Load("grass-block.png");
     grassBlockTexture = SDL_CreateTextureFromSurface(renderer, grassBlock);
+    flagBlock = IMG_Load("flag.png");
+    flagBlockTexture = SDL_CreateTextureFromSurface(renderer, flagBlock);
     int sizeY = map.size();
     int sizeX = map.at(0).size();
     for(int mapY = 0; mapY < sizeY; mapY++) {
@@ -24,10 +26,13 @@ void World::renderWorld() {
             SDL_Rect blockRect = {mapX * BLOCKSIZE + renderX, mapY * BLOCKSIZE + renderY, BLOCKSIZE, BLOCKSIZE};
             Block blockId = map.at(mapY).at(mapX);
             switch(blockId) {
-                case 0:
+                case 0: //puste
                 break;
                 case 1:
                 SDL_RenderCopy(renderer, grassBlockTexture, NULL, &blockRect);
+                break;
+                case 2:
+                SDL_RenderCopy(renderer, flagBlockTexture, NULL, &blockRect);
                 break;
             }
         }
@@ -43,8 +48,9 @@ void World::levelLoad(const char *path) {
     while(getline(inFile, line)) {
         std::istringstream ss(line);
         while(ss >> blockId) {
-            if(blockId == 1) row.push_back(GRASS);
             if(blockId == 0) row.push_back(NOTHING);
+            if(blockId == 1) row.push_back(GRASS);
+            if(blockId == 2) row.push_back(FLAG);
         }
         map.push_back(row);
         row.clear();
@@ -83,14 +89,14 @@ bool World::upperBlocks(int pigX, int pigY) {
     return false;   
 };
 
-bool World::lowerBlocks(int pigX, int pigY) {
+bool World::lowerBlocks(int pigX, int pigY, bool * deadPig) {
     int blockTileX = pigX / BLOCKSIZE;
     int blockTileY = (pigY + PIG_HEIGHT) / BLOCKSIZE;
     for (int i = 0; i < 2; i++) {
         //std::cout << pigY  << " " << map.size() * BLOCKSIZE << std::endl;
         if(pigY + PIG_HEIGHT > map.size() * BLOCKSIZE) {
             std::cout << "YOU DIED BY FALLING" << std::endl;
-            
+            *deadPig = true;
             break;
         }
         //if(blockTileY <= map.size() && blockTileX + i <= map.at(0).size()) {
@@ -105,7 +111,7 @@ bool World::lowerBlocks(int pigX, int pigY) {
     return false;   
 };
 
-bool World::rightBlocks(int pigX, int pigY) {
+bool World::rightBlocks(int pigX, int pigY, bool * winPig) {
     int blockTileX = (pigX + PIG_WIDTH) / BLOCKSIZE;
     int blockTileY = (pigY  + (PIG_HEIGHT/2)) / BLOCKSIZE;
     for (int i = 0; i < 1; i++) {
@@ -114,13 +120,17 @@ bool World::rightBlocks(int pigX, int pigY) {
         SDL_RenderDrawRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);*/
         //if(blockTileY + i <= map.size() && blockTileX <= map.at(0).size()) {
-            if(map.at(blockTileY + i).at(blockTileX) == 1) {
-                if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
-                    //printf("hitbox prawy ");
-                    return true;
-                    break;
-                }
+        if(map.at(blockTileY + i).at(blockTileX) == 1) {
+            if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
+                //printf("hitbox prawy ");
+                return true;
+                break;
             }
+        }
+        if(map.at(blockTileY + i).at(blockTileX) == 2) {
+            std::cout << "WIN" << std::endl;
+            *winPig = true;
+        }
         //}
     }
     return false;
