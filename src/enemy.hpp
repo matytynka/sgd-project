@@ -25,6 +25,6 @@ class Enemy {
         int getDeadTimer();
         void move(bool leftBlocks, bool rightBlocks);
         bool checkHitboxWithPig(int pigTileX, int pigTileY);
-        void display(SDL_Renderer* renderer);
+        void display(SDL_Renderer* renderer, Point p);
         void textureLoad(SDL_Renderer* renderer);
 };

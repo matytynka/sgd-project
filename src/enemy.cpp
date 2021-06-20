@@ -1,5 +1,6 @@
 #include <enemy.hpp>
 #include <iostream>
+#include <constants.h>
 
 Enemy::Enemy(){}
 
@@ -53,7 +54,7 @@ int Enemy::getDeadTimer() {
     return deadTimer;
 }
 
-void Enemy::display(SDL_Renderer* renderer){
+void Enemy::display(SDL_Renderer* renderer, Point p){
     if(dead) {
         enemy = IMG_Load("enemy-right-dead.png");
         enemyRightTexture = SDL_CreateTextureFromSurface(renderer, enemy);
@@ -62,12 +63,19 @@ void Enemy::display(SDL_Renderer* renderer){
         deadTimer--;
         //std::cout << "deadtimer: " << deadTimer << std::endl;
     }
+
+    enemyDestination.x = enemyDestination.x + p.x;
+    enemyDestination.y = enemyDestination.y + p.y;
+
     if(enemyDirection == 0) {
         SDL_RenderCopy(renderer, enemyLeftTexture, NULL, &enemyDestination);
     } else {
         SDL_RenderCopy(renderer, enemyRightTexture, NULL, &enemyDestination);
     } 
     //std::cout << SDL_GetError() << std::endl;
+
+    enemyDestination.x = enemyDestination.x - p.x;
+    enemyDestination.y = enemyDestination.y - p.y;
 }
 
 void Enemy::textureLoad(SDL_Renderer* renderer){

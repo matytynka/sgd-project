@@ -33,6 +33,8 @@ class World {
 
     void renderWorld();
 
+    Point getRenderP();
+
     void levelLoad(const char *path);
 
     bool checkHitbox(int pigTileX, int pigTileY, int blockX, int blockY);
@@ -44,4 +46,6 @@ class World {
     bool rightBlocks(int pigX, int pigY);
 
     bool leftBlocks(int pigX, int pigY);
+
+    void moveCamera(int pigX, int pigY);
 };

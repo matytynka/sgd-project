@@ -5,6 +5,7 @@
 #include <enemy.hpp>
 #include <vector>
 #include <math.h>
+#include <constants.h>
 
 World world;
 std::vector <Enemy> bluePigs;
@@ -18,15 +19,22 @@ SDL_Rect pigDestination;
 
 const Uint8 * state = SDL_GetKeyboardState(NULL);
 
+void init() {
+    //bluePigs.clear();
+    bluePigs.push_back(Enemy(921, 644));
+    bluePigs.push_back(Enemy(521, 644));
+    bluePigs.push_back(Enemy(1890, 324));
+    pigDestination = {70, window_height - 80, 94, 60};
+}
+
+
 int main(int argc, char* args[]){ 
 
     bool quit = false;
-    int window_width = 1280;
-    int window_height = 720;
     int mx = 0;
     int my = 0;
     int pigDirection = 1;
-
+    bool deadPig = false;
     bool canJump = true;
     bool jump = false;
     bool fall = false;
@@ -34,11 +42,7 @@ int main(int argc, char* args[]){
     float fallVel = 0;
     float gravity = 0.1f;
 
-    bluePigs.push_back(Enemy(921, 644));  //init
-
-    bluePigs.push_back(Enemy(521, 644)); //init
-
-    pigDestination = {70, window_height - 80, 94, 60}; //init
+    init();
     
     SDL_Init(SDL_INIT_VIDEO);
 
@@ -69,6 +73,7 @@ int main(int argc, char* args[]){
         //Uint64 start = SDL_GetPerformanceCounter();
 
         SDL_RenderClear(renderer);
+        world.moveCamera(pigDestination.x, pigDestination.y);
         world.renderWorld();
         while(SDL_PollEvent(&event)){
             if(event.type == SDL_QUIT){
@@ -79,85 +84,93 @@ int main(int argc, char* args[]){
         int prevX = pigDestination.x;
         int prevY = pigDestination.y;
 
-        if (state[SDL_SCANCODE_RIGHT]) {
-            pigDestination.x+=2;
-            pigDirection = 1;
-            //printf("x: %i, y: %i ", pigDestination.x, pigDestination.y);
-        }
-        if (state[SDL_SCANCODE_LEFT]) {
-            pigDestination.x-=2;
-            pigDirection = 0;
-        }
-        if (state[SDL_SCANCODE_SPACE] && !jump && canJump) {
-            jump = true;
-            canJump = false;
-        }
-        /*if (state[SDL_MOUSEBUTTONDOWN]) { // przesun enemy tam gdzie klikasz
-            if (event.button.button == SDL_BUTTON_LEFT){
-            mx = event.button.x;
-            my = event.button.y;
-            enemyDestination.x = mx;
-            enemyDestination.y = my;
-            }
-        }*/
+        
 
-        //przesuwanie enemy
-        for(int i = 0; i < bluePigs.size(); i++) {
-            SDL_Rect enemyDestination = bluePigs.at(i).getEnemyDestination();
-            bluePigs.at(i).move(world.leftBlocks(enemyDestination.x, enemyDestination.y), world.rightBlocks(enemyDestination.x, enemyDestination.y));
-            if (bluePigs.at(i).checkHitboxWithPig(pigDestination.x, pigDestination.y)) {
-                //jezeli pig jest w fall, podobny x (polowa) do enemy, mniejszy y od enemy -> to enemy dead
-                if (fall && (enemyDestination.x - enemyDestination.w / 2 < pigDestination.x < enemyDestination.x + enemyDestination.w / 2) && (pigDestination.y < enemyDestination.y) ) {
-                    std::cout << "dead enemy" << std::endl;
-                    bluePigs.at(i).setDead();
-                } else {
-                    std::cout << "dead pig" << std::endl;
+        if(!deadPig) {
+            if (state[SDL_SCANCODE_RIGHT]) {
+                pigDestination.x+=2;
+                pigDirection = 1;
+            }
+            if (state[SDL_SCANCODE_LEFT]) {
+                pigDestination.x-=2;
+                pigDirection = 0;
+               // printf("x: %i, y: %i ", pigDestination.x, pigDestination.y);
+            }
+            if (state[SDL_SCANCODE_SPACE] && !jump && canJump) {
+                jump = true;
+                canJump = false;
+            }
+            /*if (state[SDL_MOUSEBUTTONDOWN]) { // przesun enemy tam gdzie klikasz
+                if (event.button.button == SDL_BUTTON_LEFT){
+                mx = event.button.x;
+                my = event.button.y;
+                enemyDestination.x = mx;
+                enemyDestination.y = my;
+                }
+            }*/
+
+            //przesuwanie enemy
+            for(int i = 0; i < bluePigs.size(); i++) {
+                SDL_Rect enemyDestination = bluePigs.at(i).getEnemyDestination();
+                bluePigs.at(i).move(world.leftBlocks(enemyDestination.x, enemyDestination.y), world.rightBlocks(enemyDestination.x, enemyDestination.y));
+                if (bluePigs.at(i).checkHitboxWithPig(pigDestination.x, pigDestination.y)) {
+                    //jezeli pig jest w fall, podobny x (polowa) do enemy, mniejszy y od enemy -> to enemy dead
+                    if (fall && (enemyDestination.x - enemyDestination.w / 2 < pigDestination.x < enemyDestination.x + enemyDestination.w / 2) && (pigDestination.y < enemyDestination.y) ) {
+                        std::cout << "KILLED ENEMY" << std::endl;
+                        bluePigs.at(i).setDead();
+                    } else {
+                        std::cout << "YOU DIED BY ENEMY" << std::endl;
+                        deadPig = true;
+                    }
+                }
+                if(bluePigs.at(i).getDeadTimer() < 0) {
+                    bluePigs.erase(bluePigs.begin()+i);
                 }
             }
-            if(bluePigs.at(i).getDeadTimer() < 0) {
-                bluePigs.erase(bluePigs.begin()+i);
-            }
-        }
 
-        //hitbox swini
-        if(world.rightBlocks(pigDestination.x, pigDestination.y) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
-            pigDestination.x = prevX;
-        }
-        if(world.upperBlocks(pigDestination.x, pigDestination.y) == true) {
-            jump = false;
-            fall = true;
-        }
-        // jezeli pod swinia nic nie ma
-        if(world.lowerBlocks(pigDestination.x, pigDestination.y) == false) {
-            // ale nie jest w trakcie skoku
-            if(!jump) {
-                fall = true;
-                jumpVel = 6;
+            //hitbox swini
+            if(world.rightBlocks(pigDestination.x, pigDestination.y) == true || world.leftBlocks(pigDestination.x, pigDestination.y) == true) {
+                pigDestination.x = prevX;
             }
-        } else {
-            // jezeli pod nia coś jednak jest
-            //pigDestination.y = pigDestination.y - (pigDestination.y % BLOCKSIZE);
-            fall = false;
-            canJump = true;
-            fallVel = 0;
-            jumpVel = 6;
-        }; 
-        // jezeli jest w trakcie skoku to leci do gory
-        if (jump) {
-            pigDestination.y -= jumpVel;
-            jumpVel -= gravity;
-            if(jumpVel <= 0) {
+            if(world.upperBlocks(pigDestination.x, pigDestination.y) == true) {
                 jump = false;
                 fall = true;
             }
-        }
-        // jezeli jest w trakcie spadania to leci w dol
-        if (fall) {
-            pigDestination.y += fallVel;
-            fallVel += gravity;
+            // jezeli pod swinia nic nie ma
+            if(world.lowerBlocks(pigDestination.x, pigDestination.y) == false) {
+                // ale nie jest w trakcie skoku
+                if(!jump) {
+                    fall = true;
+                    jumpVel = 6;
+                }
+            } else {
+                // jezeli pod nia coś jednak jest
+                //pigDestination.y = pigDestination.y - (pigDestination.y % BLOCKSIZE);
+                fall = false;
+                canJump = true;
+                fallVel = 0;
+                jumpVel = 6;
+            }; 
+            // jezeli jest w trakcie skoku to leci do gory
+            if (jump) {
+                pigDestination.y -= jumpVel;
+                jumpVel -= gravity;
+                if(jumpVel <= 0) {
+                    jump = false;
+                    fall = true;
+                }
+            }
+            // jezeli jest w trakcie spadania to leci w dol
+            if (fall) {
+                pigDestination.y += fallVel;
+                fallVel += gravity;
+            }
         }
 
         //std::cout << "jump = " << jump << " fall = " << fall << " jumpVel = " << jumpVel << " fallVel = " << fallVel << std::endl;
+        Point renderP = world.getRenderP();
+        pigDestination.x = pigDestination.x + renderP.x;
+        pigDestination.y = pigDestination.y + renderP.y;
 
         if(pigDirection == 0) {
             SDL_RenderCopy(renderer, guineaPigLeftTexture, NULL, &pigDestination);
@@ -165,8 +178,11 @@ int main(int argc, char* args[]){
             SDL_RenderCopy(renderer, guineaPigRightTexture, NULL, &pigDestination);
         }
 
+        pigDestination.x = pigDestination.x - renderP.x;
+        pigDestination.y = pigDestination.y - renderP.y;
+
         for(int i = 0; i < bluePigs.size(); i++) {
-            bluePigs.at(i).display(renderer);
+            bluePigs.at(i).display(renderer, renderP);
         }
 
         SDL_RenderPresent(renderer);
