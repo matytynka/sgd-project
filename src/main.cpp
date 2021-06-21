@@ -27,12 +27,18 @@ const Uint8 * state = SDL_GetKeyboardState(NULL);
 
 void init() {
     //bluePigs.clear();
+    /*for(int i = 0; i < bluePigs.size(); i++) {
+        bluePigs.erase(bluePigs.begin()+i);
+    }*/
     bluePigs.push_back(Enemy(921, 644));
     bluePigs.push_back(Enemy(521, 644));
     bluePigs.push_back(Enemy(1890, 324));
     bluePigs.push_back(Enemy(2556, 644));
     bluePigs.push_back(Enemy(3150, 517));
     bluePigs.push_back(Enemy(2240, 455));
+
+    std::cout << bluePigs.size() << std::endl;
+    //std::cout << "error: " << SDL_GetError << std::endl;
  
     pigDestination = {70, window_height - 80, 94, 60};
 }
@@ -72,7 +78,7 @@ int main(int argc, char* args[]){
     guineaPigLeftTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
     deathImage = IMG_Load("you-died.png");
     deathImageTexture = SDL_CreateTextureFromSurface(renderer, deathImage);
-    winImage = IMG_Load("victory-royale.png");
+    winImage = IMG_Load("victory-royale-pixel.png");
     winImageTexture = SDL_CreateTextureFromSurface(renderer, winImage);
 
     for(int i = 0; i < bluePigs.size(); i++) {
@@ -204,10 +210,14 @@ int main(int argc, char* args[]){
         if(deadPig){
             deathImageDestination = {(1280-610)/2, (720-86)/2, 610, 86};
             SDL_RenderCopy(renderer, deathImageTexture, NULL, &deathImageDestination);
+            if (state[SDL_SCANCODE_RETURN]) { //scancode enter
+                deadPig = false;
+                init();
+            }
         }
 
         if(winPig){
-            winImageDestination = {(1280-863)/2, (720-295)/2, 863, 295};
+            winImageDestination = {(1280-975)/2, (720-285)/2, 975, 285};
             SDL_RenderCopy(renderer, winImageTexture, NULL, &winImageDestination);
         }
 
