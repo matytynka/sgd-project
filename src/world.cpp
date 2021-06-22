@@ -1,5 +1,4 @@
 #include <world.hpp>
-//#include <stdio.h>
 
 World::World(SDL_Renderer * renderer) {
     this->renderer = renderer;
@@ -15,9 +14,9 @@ Point World::getRenderP() {
 }
 
 void World::renderWorld() {
-    grassBlock = IMG_Load("grass-block.png");
+    grassBlock = IMG_Load("grass-block.png"); // source: Minecraft
     grassBlockTexture = SDL_CreateTextureFromSurface(renderer, grassBlock);
-    flagBlock = IMG_Load("flag.png");
+    flagBlock = IMG_Load("flag.png"); // source: http://pixelartmaker.com/art/7e15e17d2d67d86
     flagBlockTexture = SDL_CreateTextureFromSurface(renderer, flagBlock);
     int sizeY = map.size();
     int sizeX = map.at(0).size();
@@ -26,7 +25,7 @@ void World::renderWorld() {
             SDL_Rect blockRect = {mapX * BLOCKSIZE + renderX, mapY * BLOCKSIZE + renderY, BLOCKSIZE, BLOCKSIZE};
             Block blockId = map.at(mapY).at(mapX);
             switch(blockId) {
-                case 0: //puste
+                case 0: //pusty blok
                 break;
                 case 1:
                 SDL_RenderCopy(renderer, grassBlockTexture, NULL, &blockRect);
@@ -37,6 +36,8 @@ void World::renderWorld() {
             }
         }
     }
+    SDL_FreeSurface(grassBlock);
+    SDL_FreeSurface(flagBlock);
 }
 
 void World::levelLoad(const char *path) {
@@ -77,14 +78,14 @@ bool World::upperBlocks(int pigX, int pigY) {
         if(pigY < PIG_HEIGHT) { //jak wyleci za wysoko to nic nie rob
             break;
         }
-        //if(blockTileY <= map.size() && blockTileX + i<= map.at(0).size()) {
-            if(map.at(blockTileY).at(blockTileX + i) == 1) {
-                if(checkHitbox(pigX, pigY, blockTileX + i, blockTileY) == true) {
-                    return true;
-                    break;
-                }
+
+        if(map.at(blockTileY).at(blockTileX + i) == 1) {
+            if(checkHitbox(pigX, pigY, blockTileX + i, blockTileY) == true) {
+                return true;
+                break;
             }
-        //}
+        }
+
     }
     return false;   
 };
@@ -99,14 +100,13 @@ bool World::lowerBlocks(int pigX, int pigY, bool * deadPig) {
             *deadPig = true;
             break;
         }
-        //if(blockTileY <= map.size() && blockTileX + i <= map.at(0).size()) {
-            if(map.at(blockTileY).at(blockTileX + i) == 1) {
-                if(checkHitbox(pigX, pigY, blockTileX + i, blockTileY) == true) {
-                    return true;
-                    break;
-                }
+
+        if(map.at(blockTileY).at(blockTileX + i) == 1) {
+            if(checkHitbox(pigX, pigY, blockTileX + i, blockTileY) == true) {
+                return true;
+                break;
             }
-        //}
+        }
     }
     return false;   
 };
@@ -119,7 +119,6 @@ bool World::rightBlocks(int pigX, int pigY, bool * winPig) {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
         SDL_RenderDrawRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);*/
-        //if(blockTileY + i <= map.size() && blockTileX <= map.at(0).size()) {
         if(map.at(blockTileY + i).at(blockTileX) == 1) {
             if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
                 //printf("hitbox prawy ");
@@ -131,7 +130,7 @@ bool World::rightBlocks(int pigX, int pigY, bool * winPig) {
             std::cout << "WIN" << std::endl;
             *winPig = true;
         }
-        //}
+
     }
     return false;
 };
@@ -144,15 +143,14 @@ bool World::leftBlocks(int pigX, int pigY) {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 0);
         SDL_RenderDrawRect(renderer, &rect);
         SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);*/
-        //if(blockTileY + i <= map.size() && blockTileX <= map.at(0).size()) {
-            if(map.at(blockTileY + i).at(blockTileX) == 1) {
-                if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
-                //printf("hitbox lewy ");
-                    return true;
-                    break;
-                }
+        if(map.at(blockTileY + i).at(blockTileX) == 1) {
+            if(checkHitbox(pigX, pigY, blockTileX, blockTileY + i) == true){
+            //printf("hitbox lewy ");
+                return true;
+                break;
             }
-        //}
+        }
+
     }
     return false;
 };

@@ -38,7 +38,6 @@ void init() {
     bluePigs.push_back(Enemy(2240, 455));
 
     std::cout << bluePigs.size() << std::endl;
-    //std::cout << "error: " << SDL_GetError << std::endl;
  
     pigDestination = {70, window_height - 80, 94, 60};
 }
@@ -72,13 +71,13 @@ int main(int argc, char* args[]){
 
     renderer = SDL_CreateRenderer(window, -1, 0);
 
-    guineaPig = IMG_Load("guinea-pig-right.png");
+    guineaPig = IMG_Load("guinea-pig-right.png"); // source: https://store.line.me/emojishop/product/5c85c5ff100cc3533beb6858/en
     guineaPigRightTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
     guineaPig = IMG_Load("guinea-pig-left.png");
     guineaPigLeftTexture = SDL_CreateTextureFromSurface(renderer, guineaPig);
-    deathImage = IMG_Load("you-died.png");
+    deathImage = IMG_Load("you-died.png");  // source: Dark Souls
     deathImageTexture = SDL_CreateTextureFromSurface(renderer, deathImage);
-    winImage = IMG_Load("victory-royale-pixel.png");
+    winImage = IMG_Load("victory-royale-pixel.png"); // source: https://www.vippng.com/maxp/iRJiTwT/
     winImageTexture = SDL_CreateTextureFromSurface(renderer, winImage);
 
     for(int i = 0; i < bluePigs.size(); i++) {
@@ -87,11 +86,9 @@ int main(int argc, char* args[]){
 
     world = World(renderer);
 
-    world.levelLoad("level-1.txt"); //init
+    world.levelLoad("level-1.txt");
     
     while (!quit){
-
-        //Uint64 start = SDL_GetPerformanceCounter();
 
         SDL_RenderClear(renderer);
 
@@ -210,10 +207,10 @@ int main(int argc, char* args[]){
         if(deadPig){
             deathImageDestination = {(1280-610)/2, (720-86)/2, 610, 86};
             SDL_RenderCopy(renderer, deathImageTexture, NULL, &deathImageDestination);
-            if (state[SDL_SCANCODE_RETURN]) { //scancode enter
+            /*if (state[SDL_SCANCODE_RETURN]) { //scancode enter
                 deadPig = false;
                 init();
-            }
+            }*/
         }
 
         if(winPig){
@@ -222,12 +219,6 @@ int main(int argc, char* args[]){
         }
 
         SDL_RenderPresent(renderer);
-
-        /*Uint64 end = SDL_GetPerformanceCounter();
-        float elapsedMS = (end - start) / (float)SDL_GetPerformanceFrequency() * 1000.0f;
-        if(elapsedMS > 0){
-        SDL_Delay(floor(16.666f - elapsedMS));
-        }*/
     }
 
     SDL_FreeSurface(guineaPig);

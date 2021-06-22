@@ -16,7 +16,6 @@ class Enemy {
         bool leftWay = false;
         bool rightWay = true;
 
-
     public:
         Enemy();
         Enemy(int x, int y);

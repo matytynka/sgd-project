@@ -71,8 +71,7 @@ void Enemy::display(SDL_Renderer* renderer, Point p){
         SDL_RenderCopy(renderer, enemyLeftTexture, NULL, &enemyDestination);
     } else {
         SDL_RenderCopy(renderer, enemyRightTexture, NULL, &enemyDestination);
-    } 
-    //std::cout << SDL_GetError() << std::endl;
+    }
 
     enemyDestination.x = enemyDestination.x - p.x;
     enemyDestination.y = enemyDestination.y - p.y;
@@ -83,4 +82,5 @@ void Enemy::textureLoad(SDL_Renderer* renderer){
     enemyRightTexture = SDL_CreateTextureFromSurface(renderer, enemy);
     enemy = IMG_Load("enemy-left.png");
     enemyLeftTexture = SDL_CreateTextureFromSurface(renderer, enemy);
+    SDL_FreeSurface(enemy);
 }
